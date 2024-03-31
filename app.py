@@ -3,8 +3,13 @@ from chainlit.types import ThreadDict
 
 from chatbot import setup_openai, setup_mistral, setup_llama, remove_matching_suffix, stop_tokens
 
+
 from langchain.memory import ConversationBufferMemory
 from langchain.schema.runnable.config import RunnableConfig
+import bookclub_backend as db
+DB = db.DatabaseDriver()
+
+from langchain.prompts import PromptTemplate
 
 from dotenv import load_dotenv
 
@@ -71,6 +76,33 @@ async def on_chat_start():
                                           return_messages=False)
     cl.user_session.set("memory", memory)
     llm_dict[llm_choice](**llm_args_dict[llm_choice])
+@cl.on_chat_start
+async def on_chat_start():
+    llm = ChatOpenAI(streaming=True, temperature=0, model_name="gpt-4-1106-preview")
+    template = """
+Objective: You are the host of a bookclub that helps elderly people with dementia. 
+You have to prompt them and see whether or not they fully understand the content of the book. 
+Context will be provided and generate prompts based on that. 
+Ask open-ended questions but make sure that a 5th grader could answer them. 
+After a conversation has concluded, ask a question relating to the book again and then move on to the next chapter. 
+Make sure that it prompts the user to want to read the next chapter. 
+Tailor it to elderly people. 
+Only ask one question per time and keep them less than or equal to 2 sentences. 
+Pause and wait for the user to give a response to the question, then analyze the response given by the elderly person and provide feedback as well as the next question.
+
+Book chapter:
+{chapter_context}
+
+Current conversation:
+{chat_history}
+Elderly: {input}
+host:"""
+    prompt = PromptTemplate(
+        input_variables=["chat_history", "input", "chapter_context"], template=template
+    )
+
+    with open("books/alice.txt", "r", encoding='utf-8') as fp:
+        book = fp.read()
 
 
 @cl.on_message
@@ -92,11 +124,15 @@ async def on_message(message: cl.Message):
     memory.chat_memory.add_user_message(message.content.strip())
     memory.chat_memory.add_ai_message(remove_matching_suffix(res.content.strip(), stop_tokens))
 
+
 # @cl.password_auth_callback
-# def auth_callback(username: str, password: str) -> Optional[cl.AppUser]:
+# async def auth_callback(username: str, password: str):
 #     # Fetch the user matching username from your database
 #     # and compare the hashed password with the value stored in the database
-#     if (username, password) == (os.environ.get('USERNAME'), os.environ.get('PASSWORD')):
-#         return cl.AppUser(username="patient", role="ADMIN", provider="credentials")
+#     success, user = DB.login_user(username, password)
+#     if success:
+#         return cl.User(
+#             identifier=user.user_id, metadata={"role": "Patient", "provider": user.password}
+#         )
 #     else:
 #         return None

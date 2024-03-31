@@ -1,0 +1,164 @@
+/* App global styles */
+.App {
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  padding-top: 60px; /* Adjust padding to avoid content being hidden behind the header */
+}
+
+.App-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 50px; /* Fixed height for the header */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px; /* Padding inside the header */
+  box-sizing: border-box;
+  z-index: 1000; /* Ensure the header is above other content */
+}
+
+.info-toggle {
+  position: absolute;
+  left: 20px;
+  background-color: orange;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  outline: none; /* Remove the default focus outline */
+}
+
+.App-title {
+  font-size: 1.5rem; /* Adjust the font size as needed */
+  color: #333; /* Color for the app title, adjust as needed */
+}
+
+/* Chatbot Component styles */
+.chatbot-component {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  width: 100%;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin: 20px;
+}
+
+.conversation {
+  height: 80vh; 
+  width: 100%;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  scroll-behavior: smooth; /* Enable smooth scrolling */
+}
+
+.message {
+  background-color: #f8d7da;
+  align-self: flex-start;
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 20px;
+  max-width: 70%;
+  font-size: 32px; /* Adjust the font size as needed */
+}
+
+.message.user {
+  font-size: 16px; /* Adjust the font size as needed */
+  background-color: #d1e7dd;
+  align-self: flex-end;
+}
+
+.message.bot {
+  background-color: #f8d7da;
+  align-self: flex-start;
+}
+
+.message-input {
+  display: flex;
+}
+
+.message-input input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin-right: 50px;
+}
+
+.message-input button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+/* Information Panel styles */
+.information-panel {
+  position: fixed; /* Fixed position to always float on top */
+  top: 60px; /* Below the header */
+  left: 20px;
+  background-color: white;
+  width: 300px; /* Adjust the width as needed */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 999; /* Below the header but above other elements */
+}
+
+.book-details p,
+.current-status p,
+.start-date p {
+  margin: 10px 0;
+}
+
+progress {
+  width: 100%;
+  height: 20px; /* Adjust the height as needed */
+  color: green; /* Changes the progress bar color */
+  margin: 10px 0;
+}
+
+progress::-webkit-progress-bar {
+  background-color: #eee;
+}
+
+progress::-webkit-progress-value {
+  background-color: green;
+}
+
+progress::-moz-progress-bar {
+  background-color: green;
+}
+
+/* This is for browsers that don't support the color attribute */
+progress[value]::-webkit-progress-value:before {
+  content: attr(value)'%';
+  position: absolute;
+  right: 0;
+  color: white;
+}
+
+/* Responsive adjustments for smaller screens if necessary */
+@media (max-width: 768px) {
+  .App-header {
+    justify-content: flex-start;
+  }
+
+  .App-title {
+    margin-left: 60px; /* Make room for the "i" button */
+  }
+}
