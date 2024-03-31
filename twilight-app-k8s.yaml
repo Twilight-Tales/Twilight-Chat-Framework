@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twilight-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twilight
+  template:
+    metadata:
+      labels:
+        app: twilight
+    spec:
+      containers:
+      - name: twilight
+        image: quay.io/twilight_chat/twilight_chat:latest
+        ports:
+        - containerPort: 1680
+        env:
+        - name: VLLM_URL
+          value: "http://vllm:8000/v1"
+        envFrom:
+        - secretRef:
+            name: twilight-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twilight-service
+spec:
+  selector:
+    app: twilight
+  ports:
+    - protocol: TCP
+      port: 1680
+      targetPort: 1680

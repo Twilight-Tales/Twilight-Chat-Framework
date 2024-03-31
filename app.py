@@ -1,27 +1,81 @@
-import os
-
-from langchain_community.chat_models import ChatOpenAI
-
 import chainlit as cl
+from chainlit.types import ThreadDict
 
-from typing import Any, Dict, List, Optional
-from langchain.schema import BaseMemory
-from pydantic import BaseModel
+from chatbot import setup_openai, setup_mistral, setup_llama, remove_matching_suffix, stop_tokens
 
-from langchain.chains import ConversationChain
-from langchain.memory import (
-    CombinedMemory,
-    ConversationBufferMemory,
-)
 
+from langchain.memory import ConversationBufferMemory
+from langchain.schema.runnable.config import RunnableConfig
 import bookclub_backend as db
 DB = db.DatabaseDriver()
 
 from langchain.prompts import PromptTemplate
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
+str_gpt4 = "GPT-4"
+# str_mistral = "Mistral"
+str_llama_7b = "Llama2_7B"
+str_llama_7bq = "7B_GPTQ"
+str_llama_13bq = "13B_GPTQ"
+
+llm_dict = {
+    str_gpt4: setup_openai,
+    # str_mistral: setup_mistral,
+    str_llama_7b: setup_llama,
+    str_llama_7bq: setup_llama,
+    str_llama_13bq: setup_llama
+}
+
+llm_args_dict = {
+    str_gpt4: {'api_url': 'https://api.openai.com/v1/chat/completions', 'model_name': "gpt-4-1106-preview"},
+    # str_mistral: {'api_url': 'MISTRAL_URL', 'model_name': 'MISTRAL_ID'},  # Uncomment and define if used
+    str_llama_7b: {'api_url': "vLLM_URL", 'model_name': "Llama2_7B_ID"},
+    str_llama_7bq: {'api_url': "vLLM_URL", 'model_name': "Llama2_7B_GPTQ_ID"},
+    str_llama_13bq: {'api_url': "vLLM_URL", 'model_name': "Llama2_13B_GPTQ_ID"}
+}
+
+
+@cl.set_chat_profiles
+async def chat_profile():
+    return [
+        cl.ChatProfile(
+            name=str_gpt4,
+            markdown_description="The underlying LLM model is **GPT-4**.",
+            icon="https://picsum.photos/100",
+        ),
+        cl.ChatProfile(
+            name=str_llama_7b,
+            markdown_description="The underlying LLM model is **Llama-7B-chat**.",
+            icon="https://picsum.photos/200",
+        ),
+        cl.ChatProfile(
+            name=str_llama_7bq,
+            markdown_description="The underlying LLM model is **Llama-7B-chat-GPTQ**.",
+            icon="https://picsum.photos/250",
+        ),
+        cl.ChatProfile(
+            name=str_llama_13bq,
+            markdown_description="The underlying LLM model is **Llama-13B-chat-GPTQ**.",
+            icon="https://picsum.photos/300",
+        ),
+    ]
+
+
+@cl.on_chat_start
+async def on_chat_start():
+    llm_choice = cl.user_session.get("chat_profile")
+    if llm_choice == str_gpt4:
+        memory = ConversationBufferMemory(memory_key="history", input_key="input",
+                                          return_messages=True)
+    else:
+        memory = ConversationBufferMemory(memory_key="history", input_key="input",
+                                          human_prefix="Elderly", ai_prefix="Host",
+                                          return_messages=False)
+    cl.user_session.set("memory", memory)
+    llm_dict[llm_choice](**llm_args_dict[llm_choice])
 @cl.on_chat_start
 async def on_chat_start():
     llm = ChatOpenAI(streaming=True, temperature=0, model_name="gpt-4-1106-preview")
@@ -50,29 +104,26 @@ host:"""
     with open("books/alice.txt", "r", encoding='utf-8') as fp:
         book = fp.read()
 
-    partial_prompt = prompt.partial(chapter_context=book)
-
-    memory = ConversationBufferMemory(llm=llm,
-                                                  memory_key="chat_history", input_key="input",
-                                                  human_prefix="Patient", ai_prefix="Therapist")
-
-    # book_memory = BookMemory(input_key="input")
-    # # Combined: use multiple memories
-    # # https://python.langchain.com/docs/modules/memory/multiple_memory
-    # memory = CombinedMemory(memories=[conv_memory, book_memory])
-
-    conversation = ConversationChain(llm=llm, verbose=True, memory=memory, prompt=partial_prompt)
-
-    cl.user_session.set("chain", conversation)
-
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    chain = cl.user_session.get("chain")  # type: ConversationChain
-    res = await chain.arun(
-        message.content, callbacks=[cl.AsyncLangchainCallbackHandler()]
-    )
-    await cl.Message(content=res).send()
+    memory = cl.user_session.get("memory")  # type: ConversationBufferMemory
+
+    runnable = cl.user_session.get("runnable")  # type: Runnable
+
+    res = cl.Message(content="")
+
+    async for chunk in runnable.astream(
+        {"input": message.content.strip()},
+        config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
+    ):
+        await res.stream_token(chunk)
+
+    await res.send()
+
+    memory.chat_memory.add_user_message(message.content.strip())
+    memory.chat_memory.add_ai_message(remove_matching_suffix(res.content.strip(), stop_tokens))
+
 
 # @cl.password_auth_callback
 # async def auth_callback(username: str, password: str):

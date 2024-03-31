@@ -1,12 +1,8 @@
 # Welcome to Twilight Chat! 🌟
-
+### *Your personal book club host*
 ![Twilight Chat Logo](/logo?theme=dark)
 
-Hello and welcome to **Twilight Chat** - your book club host.
-
-Read together with us...
-
-**Let's start this journey together.** 🌈
+**Let's start this reading journey together.** 🌈
 
 ---
 *Twilight Chat - Read, Have Fun, Stay Sharp.*

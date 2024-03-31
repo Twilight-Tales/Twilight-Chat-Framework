@@ -22,6 +22,6 @@ RUN python3 -m pip install --upgrade pip && \
 # Copy your application code into the container
 COPY . /app/
 
-EXPOSE 8080
+EXPOSE 1680
 
-CMD ["python", "-m", "chainlit", "run", "/app/app.py", "-h", "--port", "8080"]
+CMD ["python", "-m", "chainlit", "run", "/app/app.py", "-h", "--port", "1680"]

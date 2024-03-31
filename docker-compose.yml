@@ -4,13 +4,13 @@ services:
   app:
     build: .
     image: twilight-chat
-    command: ["python", "-m", "chainlit", "run", "/app/app.py", "-h", "--port", "8080"]
+    command: ["python", "-m", "chainlit", "run", "/app/app.py", "-h", "--port", "1680"]
     env_file:
       - ./.env
     environment:
       - REDIS_URL=redis://:${PASSWORD}@redis:6379
     ports:
-      - "8080:8080"
+      - "1680:1680"
     depends_on:
       - redis
     restart: always  # app will restart if it crashes or host reboots
