@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Twilight-Chat/static/css/main.f5edd04c.css",
+    "main.js": "/Twilight-Chat/static/js/main.e0327dbb.js",
+    "static/js/453.d335414c.chunk.js": "/Twilight-Chat/static/js/453.d335414c.chunk.js",
+    "index.html": "/Twilight-Chat/index.html",
+    "main.f5edd04c.css.map": "/Twilight-Chat/static/css/main.f5edd04c.css.map",
+    "main.e0327dbb.js.map": "/Twilight-Chat/static/js/main.e0327dbb.js.map",
+    "453.d335414c.chunk.js.map": "/Twilight-Chat/static/js/453.d335414c.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f5edd04c.css",
+    "static/js/main.e0327dbb.js"
+  ]
+}
